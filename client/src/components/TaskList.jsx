@@ -10,21 +10,38 @@ export default function TaskList({ tasks, onTaskUpdated }) {
     }
   };
 
+  const getPriorityClass = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case "high":
+        return "badge-high";
+      case "low":
+        return "badge-low";
+      case "medium":
+      default:
+        return "badge-medium";
+    }
+  };
+
   return (
     <div className="task-list">
       <h2>Tasks</h2>
       {tasks.length === 0 ? (
-        <p>No tasks yet. Add one!</p>
+        <p className="empty-tasks">No tasks yet. Add one above to get started!</p>
       ) : (
         <ul>
           {tasks.map((task) => (
             <li key={task.id} className={task.completed ? "completed" : ""}>
-              <input
-                type="checkbox"
-                checked={task.completed}
-                onChange={() => handleToggle(task.id, task.completed)}
-              />
-              <span>{task.title}</span>
+              <label className="task-item-label">
+                <input
+                  type="checkbox"
+                  checked={task.completed}
+                  onChange={() => handleToggle(task.id, task.completed)}
+                />
+                <span className="task-title">{task.title}</span>
+              </label>
+              <span className={`priority-badge ${getPriorityClass(task.priority)}`}>
+                {task.priority || "Medium"}
+              </span>
             </li>
           ))}
         </ul>

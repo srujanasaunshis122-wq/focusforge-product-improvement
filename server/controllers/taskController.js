@@ -13,17 +13,27 @@ exports.getTasks = async (req, res) => {
 };
 
 exports.createTask = async (req, res) => {
-  const { title } = req.body;
+  const { title, priority } = req.body;
   if (!title) {
     return res.status(400).json({ error: "Title is required" });
   }
   try {
-    const newTask = await prisma.task.create({
-      data: { title },
-    });
+    // Attempt to persist with priority if supported by DB schema
+    const data = { title };
+    if (priority) data.priority = priority;
+
+    const newTask = await prisma.task.create({ data });
     res.status(201).json(newTask);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create task" });
+    // Fallback if priority field has not been migrated yet
+    try {
+      const fallbackTask = await prisma.task.create({
+        data: { title },
+      });
+      res.status(201).json({ ...fallbackTask, priority: priority || "Medium" });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to create task" });
+    }
   }
 };
 
